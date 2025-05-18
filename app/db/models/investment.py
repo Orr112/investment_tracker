@@ -17,7 +17,7 @@ class InvestmentPosition(Base):
     alerts = relationship("AlertRule", back_populates="position")
 
 class AlertRule(Base):
-    __table_name__ = "alert_rules"
+    __tablename__ = "alert_rules"
 
     id = Column(Integer, primary_key=True, index=True)
     position_id = Column(Integer, ForeignKey("investment_positions.id"))
