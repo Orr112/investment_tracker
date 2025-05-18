@@ -1,21 +1,23 @@
 from sqlalchemy.orm import Session
-from app.db.models.investment import Holding
+from app.db.models.investment import InvestmentPosition
 from app.schemas.holdings import HoldingCreate, HoldingUpdate
 
-def create_holding(db: Session, holding: HoldingCreate) -> Holding:
-    db_holding = Holding(**holding.dict())
+def create_holding(db: Session, holding: HoldingCreate) -> InvestmentPosition:
+    data = holding.dict()
+    data["shares"] = data.pop("quantity")
+    db_holding = InvestmentPosition(**data)
     db.add(db_holding)
     db.commit()
     db.refresh(db_holding)
     return db_holding
 
-def get_holding(db: Session, holding_id: int) -> Holding | None:
-    return db.query(Holding).filter(Holding.id == holding_id).first()
+def get_holding(db: Session, holding_id: int) -> InvestmentPosition | None:
+    return db.query(InvestmentPosition).filter(InvestmentPosition.id == holding_id).first()
 
-def get_all_holdings(db: Session) -> list[Holding]:
-    return db.query(Holding).all()
+def get_all_holdings(db: Session) -> list[InvestmentPosition]:
+    return db.query(InvestmentPosition).all()
 
-def update_holding(db: Session, holding_id: int, update: HoldingUpdate) -> Holding | None:
+def update_holding(db: Session, holding_id: int, update: HoldingUpdate) -> InvestmentPosition | None:
     holding = get_holding(db, holding_id)
     if not holding:
         return None
