@@ -24,6 +24,8 @@ build/
 .pytest_cache/
 coverage.xml
 htmlcov/
+.coverage
+.log
 
 # Databases / local state
 *.sqlite3
@@ -39,3 +41,7 @@ Thumbs.db
 # Virtual environment
 venv/
 ENV/
+
+
+# Migrations
+alembic/versions/*.pyc
