@@ -14,10 +14,18 @@ class HoldingUpdate(BaseModel):
     symbol: Optional[str] = Field(None, example="APPL")
     quantity: Optional[float] = Field(None, gt=0, example=12.0)
     purchase_price: Optional[float] = Field(None, gt=0, example=145.00)
+    current_price: float | None = None
 
 class HoldingOut(HoldingBase):
     id: int
-    created_at: datetime
+    symbol: str
+    quantity: float = Field(..., alias="shares")
+    purchase_price: float
+    purchase_date: datetime
+    current_price: float | None = None
+    auto_sell_triggered: bool
+    created_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        populate_by_name = True

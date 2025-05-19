@@ -13,6 +13,7 @@ class InvestmentPosition(Base):
     purchase_date = Column(DateTime, default=datetime.utcnow)
     current_price = Column(Float, nullable=True)
     auto_sell_triggered = Column(Boolean, default=False)
+    created_at = Column(DateTime, nullable=True, default=datetime.utcnow)
 
     alerts = relationship("AlertRule", back_populates="position")
 
