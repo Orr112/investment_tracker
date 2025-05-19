@@ -23,9 +23,14 @@ def get_holding(holding_id: int, db: Session = Depends(get_db)):
 def list_holdings(db: Session = Depends(get_db)):
     return crud.list_holdings(db=db)
 
-@router.post("/{holding_id}", response_model=HoldingOut)
-def update_holding(holding_id: int, update: HoldingUpdate,  db: Session = Depends(get_db)):
-    db_holding = crud.update_holding(db=db, holding_id=holding_id, update=update)
+@router.put("/{holding_id}", response_model=HoldingOut)
+def update_holding(holding_id: int, update: HoldingUpdate, db: Session = Depends(get_db)):
+    db_holding = crud.update_holding(db, holding_id, update)
     if db_holding is None:
-        raise HTTPException(statu_code=404, detail="Holding not found")
-    return db_holding 
+        raise HTTPException(status_code=404, detail="Holding not found")
+    return db_holding
+
+
+@router.delete("/{holding_id}")
+def delete_holding(holding_id: int, db: Session = Depends(get_db)):
+    return crud.delete_holding(db, holding_id)

@@ -3,6 +3,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 import os
 import sys
+import logging
 
 # Add the app directory to sys.path so Alembic can find the models
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
@@ -22,6 +23,12 @@ target_metadata = Base.metadata
 
 # Get the database URL from the environment variable or fallback to default
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/investment_db")
+
+#print("Using SQLAlchemy URL:", str(config.get_main_option("sqlalchemy.url")))
+
+logging.getLogger(__name__).info("Using SQLAlchemy URL: %s", config.get_main_option("sqlalchemy.url"))
+
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode."""
