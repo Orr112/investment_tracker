@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
+from sqlalchemy.orm import Session
+from app.db.database import get_db
+from app.services.candles import store_candles
 from datetime import datetime
 from typing import List
 from app.schemas.pricing import PriceCandle
@@ -14,3 +17,9 @@ def get_candles(
     end: datetime = Query(..., description="End date (e.g., 2024-01-10T00:00:00)"),):
     candles = fetch_price_candles(symbol=symbol, timeframe=timeframe, start=start, end=end)
     return candles
+
+@router.post("/candles/{symbol}")
+def ingest_candles(symbol: str, db: Session = Depends(get_db)):
+    bars = fetch_price_candles(symbol, start="2024-01-01", end="2024-05-01")
+    store_candles(db, symbol, bars)
+    return {"status": "ingested", "count": len(bars)}

@@ -1,17 +1,17 @@
+import os
+import logging
 import requests
-from pydantic import BaseModel, Field, ValidationError
 from datetime import datetime
 from typing import List, Optional
-import logging
-import os
+from pydantic import BaseModel, Field, ValidationError
 
-# ✅ Reason: Keeps API keys out of code and supports env-based config
+# ✅ Load API credentials from environment variables
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY")
 ALPACA_API_SECRET = os.getenv("ALPACA_API_SECRET")
 BASE_URL = os.getenv("ALPACA_BASE_URL", "https://data.alpaca.markets/v2")
 
 
-# ✅Defines strict data contract for price data
+# ✅ Schema for each price bar (candle)
 class PriceCandle(BaseModel):
     t: datetime                     # timestamp
     o: float = Field(gt=0)          # open price
@@ -21,19 +21,16 @@ class PriceCandle(BaseModel):
     v: int = Field(ge=0)            # volume (non-negative)
 
 
-# ✅ Allows external validation and logging of ingestion results
+# ✅ Schema for full API response
 class PriceFetchResult(BaseModel):
     symbol: str
     candles: List[PriceCandle]
 
 
-def fetch_price_candles(symbol: str, start: str, end: str, timeframe: str = "1D") -> PriceFetchResult:
+def fetch_price_candles(symbol: str, start: str, end: str, timeframe: str = "1Day") -> PriceFetchResult:
     """
-    Fetch historical price candles from Alpaca
-    
-    - Meets requirement: Live data ingestion
-    - Validates: Schema, types, out-of-range values
-    - Clean design: separation of concerns (API call + validation)
+    Fetch historical price candles from Alpaca.
+    Validates and returns structured results.
     """
     headers = {
         "APCA-API-KEY-ID": ALPACA_API_KEY,
@@ -42,8 +39,8 @@ def fetch_price_candles(symbol: str, start: str, end: str, timeframe: str = "1D"
 
     url = f"{BASE_URL}/stocks/{symbol}/bars"
     params = {
-        "start": start.isoformat() + "Z" if isinstance(start, datetime) else start,
-        "end": end.isoformat() + "Z" if isinstance(end, datetime) else end,
+        "start": start if isinstance(start, str) else start.isoformat() + "Z",
+        "end": end if isinstance(end, str) else end.isoformat() + "Z",
         "timeframe": timeframe,
         "limit": 1000
     }
@@ -54,7 +51,8 @@ def fetch_price_candles(symbol: str, start: str, end: str, timeframe: str = "1D"
         raise Exception("Failed to fetch data from Alpaca")
 
     try:
-        candles = [PriceCandle(**bar) for bar in response.json().get("bars", [])]
+        raw_bars = response.json().get("bars", [])
+        candles = [PriceCandle(**bar) for bar in raw_bars]
         return PriceFetchResult(symbol=symbol, candles=candles)
     except ValidationError as e:
         logging.error(f"Data validation failed for {symbol}: {e}")
