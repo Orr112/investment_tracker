@@ -5,7 +5,8 @@ from app.services.candles import store_candles
 from datetime import datetime
 from typing import List
 from app.schemas.pricing import PriceCandle
-from app.services.candles import fetch_price_candles
+from app.ingestion.alpaca_client import fetch_price_candles
+
 
 router = APIRouter()
 
