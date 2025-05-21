@@ -1,6 +1,6 @@
-# 📈 Investment Tracker
-
 ![CI](https://github.com/YOUR_USERNAME/investment_tracker/actions/workflows/ci.yml/badge.svg)
+
+# 📈 Investment Tracker
 
 A modern API-based system for tracking investments in real time, with future support for **AI-powered strategies**, **machine learning-based alerts**, and **backtested trading logic**.
 
@@ -59,37 +59,51 @@ Built with **FastAPI**, **SQLAlchemy**, and **PostgreSQL**, this project lays th
 git clone https://github.com/YOUR_USERNAME/investment_tracker.git
 cd investment_tracker
 
+---
 
 ###**Create and activate a virtual environment**
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
+---
+
 ###**Install dependencies** 
 ```bash
 pip install -r requirements.txt
+
+---
 
 ###**Configure environment variables**
 ####Copy the .env.example and cutomize it
 ```bash
 cp .env.example .env
 
+---
+
 ###**Edit your .env with the correct database credentials:**
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/investment_db
 
+---
 
 ###**Run Migrations**
 ```bash
 alembic upgrade head
+
+---
 
 ###**Start the application**
 ```bash
 uvicorn app.main:app --reload
 #### Visit the app at: http://localhost:8000
 
+---
+
 ###🧪 Running Tests
 ```bash
 pytest tests/ --disable-warnings
+
+---
 
 ####Generate coverage report:
 ```bash
@@ -123,6 +137,7 @@ tests/
 .env.example
 requirements.txt
 
+---
 
 ###🧠 Why This Project Exists
 This is more than just a tracker — it's an evolving investment assistant designed for real-world performance.
