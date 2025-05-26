@@ -4,6 +4,11 @@ import requests
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, ValidationError
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 
 # ✅ Load API credentials from environment variables
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY")
