@@ -41,6 +41,13 @@ def read_candles(
 ):
     return crud.get_price_candles(db, symbol, start=start, end=end)
 
+@router.get("/candles/{candle_id}", response_model=PriceCandleOut, tags=["Candles"])
+def read_candle_by_id(candle_id: int, db: Session = Depends(get_db)):
+    candle = crud.get_price_candle_by_id(db, candle_id)
+    if not candle:
+        return {"error": f"Candle with ID {candle_id} not found."}
+    return candle
+
 @router.put("/candles/{candle_id}", response_model=PriceCandleOut, tags=["Candles"])
 def update_candle(candle_id: int, update: PriceCandleUpdate, db: Session = Depends(get_db)):
     return crud.update_price_candle(db, candle_id, update)

@@ -28,6 +28,9 @@ def get_price_candles(
 
     return query.order_by(CandleModel.timestamp).all()
 
+def get_price_candle_by_id(db: Session, candle_id: int) -> Optional[CandleModel]:
+    return db.query(CandleModel).filter(CandleModel.id == candle_id).first()
+
 def update_price_candle(db: Session, candle_id: int, update_data: PriceCandleUpdate) -> CandleModel:
     candle = db.query(CandleModel).get(candle_id)
     if not candle:

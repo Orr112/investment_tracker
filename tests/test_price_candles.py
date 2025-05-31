@@ -50,6 +50,36 @@ def test_read_candles(client, db_session):
     assert any(item["symbol"] == "TSLA" for item in data)
 
 
+def test_get_price_candle_by_id(client, db_session):
+    # Create a new candle
+    candle_data = PriceCandleCreate(
+        symbol="NFLX",
+        open=400.0,
+        high=410.0,
+        low=390.0,
+        close=405.0,
+        volume=17000000,
+        timestamp=datetime.utcnow() - timedelta(days=1)
+    )
+    candle = CandleModel(**candle_data.dict())
+    db_session.add(candle)
+    db_session.commit()
+    db_session.refresh(candle)
+
+    # GET the candle by ID
+    response = client.get(f"/api/v1/candles/{candle.id}")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["id"] == candle.id
+    assert data["symbol"] == candle.symbol
+    assert data["open"] == candle.open
+    assert data["high"] == candle.high
+    assert data["low"] == candle.low
+    assert data["close"] == candle.close
+    assert data["volume"] == candle.volume
+
+
 def test_read_candles_with_date_filtering(client, db_session):
     now = datetime.utcnow()
     candle1 = PriceCandleCreate(
@@ -95,3 +125,66 @@ def test_read_candles_with_date_filtering(client, db_session):
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
+
+
+def test_update_candle(client, db_session):
+    # 1. Create initial candle in DB
+    payload = PriceCandleCreate(
+        symbol="AMZN",
+        open=100.0, high=105.0, low=98.0, close=102.0,
+        volume=10000000,
+        timestamp=datetime.utcnow()
+    )
+    db_candle = CandleModel(**payload.dict())
+    db_session.add(db_candle)
+    db_session.commit()
+    db_session.refresh(db_candle)
+
+    #2.  Prepare update data
+
+    update_data = {
+        "close": 103.5,
+        "volume": 11000000
+    }
+    # 3. Call update endpoint
+    response = client.put(f"/api/v1/candles/{db_candle.id}", json=update_data)
+    assert response.status_code == 200
+    data = response.json()
+
+    # 4. Verify update
+    assert data["id"] == db_candle.id
+    assert data["close"] == update_data["close"]
+    assert data["volume"] == update_data["volume"]
+    assert data["symbol"] == payload.symbol
+
+def test_delete_candle(client, db_session):
+    # Step 1: Create a candle
+    candle_data = PriceCandleCreate(
+        symbol="NFLX",
+        open=400.0, high=410.0, low=395.0, close=405.0,
+        volume=18000000,
+        timestamp=datetime.utcnow()
+    )
+    candle_model = CandleModel(**candle_data.dict())
+    db_session.add(candle_model)
+    db_session.commit()
+    db_session.refresh(candle_model)
+
+    candle_id = candle_model.id
+
+    # Step 2: Delete the candle
+    response = client.delete(f"/api/v1/candles/{candle_id}")
+    assert response.status_code == 200
+    assert response.json()["status"] == "deleted"
+    assert response.json()["id"] == candle_id
+
+    # Step 3: Confirm it's gone
+    response = client.get(f"/api/v1/candles/db?symbol=NFLX")
+    assert response.status_code == 200
+    data = response.json()
+    assert all(c["id"] != candle_id for c in data)
+
+    # Step 4: Try deleting again expect an error
+    response = client.delete(f"/api/v1/candles/{candle_id}")
+    assert response.status_code == 200
+    assert "error" in response.json()
