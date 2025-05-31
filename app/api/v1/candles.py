@@ -6,6 +6,7 @@ from typing import List, Optional
 from app.db.database import get_db
 from app.db.models.pricing import PriceCandle  # ✅ SQLAlchemy model
 from app.schemas.pricing import PriceCandleCreate, PriceCandleUpdate, PriceCandleOut  # ✅ Pydantic schemas
+from app.services.candles import store_candles
 from app.ingestion.alpaca_client import fetch_price_candles
 import app.db.crud.pricing as crud
 
