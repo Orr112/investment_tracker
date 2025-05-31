@@ -1,8 +1,8 @@
 from sqlalchemy import Column, DateTime, Float, Integer, String
-from sqlalchemy.orm import declarative_base
+from app.db.database import Base
 from datetime import datetime
 
-Base = declarative_base()
+
 
 class PriceCandle(Base):
     __tablename__ = "price_candles"
