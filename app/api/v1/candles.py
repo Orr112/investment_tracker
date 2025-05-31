@@ -1,18 +1,18 @@
 from fastapi import APIRouter, Query, Depends
 from sqlalchemy.orm import Session
-from app.db.database import get_db
-from app.services.candles import store_candles
 from datetime import datetime
 from typing import List, Optional
-from app.schemas.pricing import PriceCandle
+
+from app.db.database import get_db
+from app.db.models.pricing import PriceCandle  # ✅ SQLAlchemy model
+from app.schemas.pricing import PriceCandleCreate, PriceCandleUpdate, PriceCandleOut  # ✅ Pydantic schemas
 from app.ingestion.alpaca_client import fetch_price_candles
 import app.db.crud.pricing as crud
-from app.schemas.pricing import PriceCandle, PriceCandleCreate, PriceCandleUpdate
 
 
 router = APIRouter()
 
-@router.get("/candles", response_model=list[PriceCandle], tags=["Candles"])
+@router.get("/candles", response_model=list[PriceCandleOut], tags=["Candles"])
 def get_candles(
     symbol: str = Query(..., description="Ticker symbol (e.g., AAPL)"),
     timeframe: str = Query(..., description="Timeframe (e.g., 1Day, 1Hour)"),
@@ -27,11 +27,11 @@ def ingest_candles(symbol: str, db: Session = Depends(get_db)):
     store_candles(db, symbol, bars)
     return {"status": "ingested", "count": len(bars)}
 
-@router.post("/candles", response_model=PriceCandle, tags=["Candles"])
+@router.post("/candles", response_model=PriceCandleOut, tags=["Candles"])
 def create_candle(candle: PriceCandleCreate, db: Session = Depends(get_db)):
     return crud.create_price_candle(db, candle)
 
-@router.get("/candles/db", response_model=List[PriceCandle], tags=["Candles"])
+@router.get("/candles/db", response_model=List[PriceCandleOut], tags=["Candles"])
 def read_candles(
     symbol: Optional[str] = None,
     start: Optional[datetime] = None,
@@ -40,10 +40,20 @@ def read_candles(
 ):
     return crud.get_price_candles(db, symbol, start=start, end=end)
 
-@router.put("/candles/{candle_id}", response_model=PriceCandle, tags=["Candles"])
+@router.put("/candles/{candle_id}", response_model=PriceCandleOut, tags=["Candles"])
 def update_candle(candle_id: int, update: PriceCandleUpdate, db: Session = Depends(get_db)):
     return crud.update_price_candle(db, candle_id, update)
 
 @router.delete("/candles/{candle_id}", tags=["Candles"])
 def delete_candle(candle_id: int, db: Session = Depends(get_db)):
     return crud.delete_price_candle(db, candle_id)
+
+@router.post("/candles-debug", response_model=PriceCandleOut)
+def create_price_candle(candle: PriceCandleCreate, db: Session = Depends(get_db)):
+    db_candle = PriceCandle(**candle.dict())
+    db.add(db_candle)
+    db.commit()
+    db.refresh(db_candle)
+
+    print("🧪 Returning DB object with ID:", db_candle.id, "Created At:", db_candle.created_at)
+    return db_candle
