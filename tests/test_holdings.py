@@ -23,6 +23,23 @@ def test_model_to_schema_contract():
     assert schema.symbol == "TSLA"
     assert schema.quantity == model.shares
 
+def test_create_and_read_candle(client, db_session):
+    response = client.post("/candles", json={
+        "symbol": "AAPL",
+        "timestamp": "2024-01-01T00:00:00Z",
+        "open": 100.0,
+        "high": 110.0,
+        "low": 95.0,
+        "close": 105.0,
+        "volume": 1000000
+    })
+    assert response.status_code == 200
+
+    get_response = client.get("/candles/db?symbol=AAPL")
+    assert get_response.status_code == 200
+    assert len(get_response.json()) > 0
+
+
 def test_create_and_get_holding():
     create_payload = {
         "symbol": "APPL",
