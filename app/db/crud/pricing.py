@@ -1,22 +1,32 @@
-from sqlalchemy.orm import Session
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
+from sqlalchemy.orm import Session
+
 from app.db.models.pricing import PriceCandle as CandleModel
 from app.schemas.pricing import PriceCandleCreate, PriceCandleUpdate
 
-def create_price_candle(db: Session, candle_data: PriceCandleCreate) ->  CandleModel:
+
+# 🔹 CREATE
+def create_price_candle(db: Session, candle_data: PriceCandleCreate) -> CandleModel:
     candle = CandleModel(**candle_data.dict())
     db.add(candle)
     db.commit()
     db.refresh(candle)
     return candle
 
+
+# 🔹 READ
+def get_price_candle_by_id(db: Session, candle_id: int) -> Optional[CandleModel]:
+    return db.query(CandleModel).filter(CandleModel.id == candle_id).first()
+
+
 def get_price_candles(
-        db: Session,
-        symbol: Optional[str] = None,
-        start: Optional[datetime] = None,
-        end: Optional[datetime] = None
-) -> List[CandleModel] :
+    db: Session,
+    symbol: Optional[str] = None,
+    start: Optional[datetime] = None,
+    end: Optional[datetime] = None
+) -> List[CandleModel]:
     query = db.query(CandleModel)
 
     if symbol:
@@ -28,10 +38,13 @@ def get_price_candles(
 
     return query.order_by(CandleModel.timestamp).all()
 
-def get_price_candle_by_id(db: Session, candle_id: int) -> Optional[CandleModel]:
-    return db.query(CandleModel).filter(CandleModel.id == candle_id).first()
 
-def update_price_candle(db: Session, candle_id: int, update_data: PriceCandleUpdate) -> CandleModel:
+def get_all_symbols(db: Session) -> List[str]:
+    return [row[0] for row in db.query(CandleModel.symbol).distinct().all()]
+
+
+# 🔹 UPDATE
+def update_price_candle(db: Session, candle_id: int, update_data: PriceCandleUpdate) -> Optional[CandleModel]:
     candle = db.query(CandleModel).get(candle_id)
     if not candle:
         return None
@@ -44,6 +57,7 @@ def update_price_candle(db: Session, candle_id: int, update_data: PriceCandleUpd
     return candle
 
 
+# 🔹 DELETE
 def delete_price_candle(db: Session, candle_id: int) -> dict:
     candle = db.query(CandleModel).get(candle_id)
     if not candle:
