@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, Integer, String, UniqueConstraint
 from app.db.database import Base
 from datetime import datetime
 
@@ -16,6 +16,10 @@ class PriceCandle(Base):
     close = Column(Float, nullable=False)
     volume = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("symbol", "timestamp", name="uq_symbol_timestamp"),
+    )
 
     def __repr__(self):
         return(

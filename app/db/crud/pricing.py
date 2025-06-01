@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import insert
 
 from app.db.models.pricing import PriceCandle as CandleModel
 from app.schemas.pricing import PriceCandleCreate, PriceCandleUpdate
@@ -55,6 +56,15 @@ def update_price_candle(db: Session, candle_id: int, update_data: PriceCandleUpd
     db.commit()
     db.refresh(candle)
     return candle
+
+def bulk_upsert_price_candles(db: Session, candles: list[dict]):
+    if not candles:
+        return
+
+    stmt = insert(CandleModel).values(candles)
+    stmt = stmt.on_conflict_do_nothing(index_elements=["symbol", "timestamp"])
+    db.execute(stmt)
+    db.commit()
 
 
 # 🔹 DELETE

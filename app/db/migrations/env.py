@@ -10,7 +10,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 # Import your Base and models
 from app.db.database import Base
-from app.db.models import investment  # ensures investment tables are registered
+from app.db.models import investment
+from app.db.models.pricing import PriceCandle
+
 
 # this is the Alembic Config object, which provides access to values within the .ini file
 config = context.config

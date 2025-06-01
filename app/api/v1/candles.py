@@ -33,9 +33,9 @@ def get_candles(
 
 @router.post("/candles/{symbol}", tags=["Candles"])
 def ingest_candles(symbol: str, db: Session = Depends(get_db)):
-    bars = fetch_price_candles(symbol, start="2024-01-01", end="2024-05-01")
-    store_candles(db, symbol, bars)
-    return {"status": "ingested", "count": len(bars)}
+    result = fetch_price_candles(symbol, start="2024-01-01", end="2024-05-01")
+    store_candles(db, symbol, result)
+    return {"status": "ingested", "count": len(result.candles)}
 
 
 # 🔹 Create
