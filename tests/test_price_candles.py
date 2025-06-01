@@ -1,6 +1,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import patch
 from datetime import datetime, timedelta
 from app.db.models.pricing import PriceCandle as CandleModel
 from app.schemas.pricing import PriceCandleCreate
@@ -23,6 +24,24 @@ def test_create_candle(client, db_session):
     data = response.json()
     assert data["symbol"] == payload["symbol"]
     assert "id" in data
+
+def test_ingest_candles(client, db_session):
+    mocked_bars = [
+        {"t": datetime(2024, 1, 2, 10, 0, 0), "o": 100, "h": 110, "l": 95, "c": 105, "v": 150000},
+        {"t": datetime(2024, 1, 3, 10, 0, 0), "o": 106, "h": 112, "l": 100, "c": 108, "v": 130000}
+    ] 
+    with patch("app.api.v1.candles.fetch_price_candles", return_value=mocked_bars):
+        response = client.post("/api/v1/candles/TEST")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ingested"
+        assert data["count"] == 2
+
+        # Verify that the data is in the database
+        candles = db_session.query(CandleModel).filter_by(symbol="TEST").all()
+        assert len(candles) == 2
+
 
 def test_read_candles(client, db_session):
     payload = PriceCandleCreate(
