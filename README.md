@@ -1,4 +1,4 @@
-![CI](https://github.com/YOUR_USERNAME/investment_tracker/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Orr112/investment_tracker/actions/workflows/ci.yml/badge.svg)
 
 # 📈 Investment Tracker
 
@@ -94,19 +94,19 @@ Visit: http://localhost:8000
 ```
 ---
 
-##🧪 Running Tests
+## 🧪 Running Tests
 ```bash
 pytest tests/ --disable-warnings
 ```
 
-###To generate a coverage report:
+### To generate a coverage report:
 ```bash
 coverage run -m pytest
 coverage report
 ```
 ---
 
-##📦 CI/CD
+## 📦 CI/CD
 ### GitHub Actions automatically runs:
 
 - ✅ Unit tests
@@ -144,12 +144,12 @@ This is more than a tracker — it's the beginning of an investment co-pilot.
 
 The long-term vision is to automate routine trading decisions, learn from historical data, and empower investors with real-time insights and optimized portfolio actions.
 
-##💡 Contributing
+💡 Contributing
 Want to help build the intelligent investment layer?
 Feel free to open issues, suggest features, or fork and experiment.
 ---
 
-##📜 License
+## 📜 License
 MIT — see LICENSE for details.
 
 ```yaml
