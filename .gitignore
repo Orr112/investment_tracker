@@ -44,4 +44,4 @@ ENV/
 
 
 # Migrations
-alembic/versions/*.pyc
+alembic/versions/*.pyc.env
