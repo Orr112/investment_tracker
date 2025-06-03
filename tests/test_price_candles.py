@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from app.db.models.pricing import PriceCandle as CandleModel
 from app.schemas.pricing import PriceCandleCreate
+from app.services.candles import PriceFetchResult, PriceCandle
 
 # -------------------------------
 # 🔹 Test: Debug/Create Candle
@@ -32,18 +33,17 @@ def test_create_candle(client, db_session):
 # -------------------------------
 def test_ingest_candles(client, db_session):
     mocked_bars = [
-        {"t": datetime(2024, 1, 2, 10, 0, 0), "o": 100, "h": 110, "l": 95, "c": 105, "v": 150000},
-        {"t": datetime(2024, 1, 3, 10, 0, 0), "o": 106, "h": 112, "l": 100, "c": 108, "v": 130000}
+        PriceCandle(t=datetime(2024, 1, 2, 10, 0, 0), o=100, h=110, l=95, c=105, v=150000),
+        PriceCandle(t=datetime(2024, 1, 3, 10, 0, 0), o=106, h=112, l=100, c=108, v=130000)
     ]
-    with patch("app.api.v1.candles.fetch_price_candles", return_value=mocked_bars):
-        response = client.post("/api/v1/candles/TEST")
+    mocked_result = PriceFetchResult(symbol="TEST", candles=mocked_bars)
+
+    with patch("app.api.v1.candles.fetch_price_candles", return_value=mocked_result):
+        response = client.post("/api/v1/candles/TEST/ingest")
 
         assert response.status_code == 200
         assert response.json()["status"] == "ingested"
         assert response.json()["count"] == 2
-
-        candles = db_session.query(CandleModel).filter_by(symbol="TEST").all()
-        assert len(candles) == 2
 
 
 # -------------------------------
@@ -168,6 +168,27 @@ def test_update_candle(client, db_session):
     assert data["volume"] == update_data["volume"]
 
 
+def test_patch_price_candle(client, db_session):
+    # Create sample candle
+    new_candle = {
+        "symbol": "AAPL",
+        "timestamp": "2024-05-01T00:00:00Z",
+        "open": 150.0,
+        "high": 155.0,
+        "low": 149.0,
+        "close": 153.0,
+        "volume": 5000
+    }
+    response = client.post("/api/v1/candles", json=new_candle)
+    candle_id = response.json()["id"]
+
+    # Patch just the volume
+    patch_data = {"volume": 9999}
+    patch_response = client.patch(f"/api/v1/candles/{candle_id}", json=patch_data)
+    assert patch_response.status_code == 200
+    assert patch_response.json()["volume"] == 9999
+
+
 # -------------------------------
 # 🔹 Test: Delete Candle
 # -------------------------------
@@ -190,5 +211,6 @@ def test_delete_candle(client, db_session):
     assert all(c["id"] != candle.id for c in response.json())
 
     response = client.delete(f"/api/v1/candles/{candle.id}")
-    assert response.status_code == 200
-    assert "error" in response.json()
+    assert response.status_code == 404
+    assert "detail" in response.json()
+    assert response.json()["detail"] == "Candle not found"

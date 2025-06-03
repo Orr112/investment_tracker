@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -31,7 +31,7 @@ def get_candles(
     return candles
 
 
-@router.post("/candles/{symbol}", tags=["Candles"])
+@router.post("/candles/{symbol}/ingest", tags=["Candles"])
 def ingest_candles(symbol: str, db: Session = Depends(get_db)):
     result = fetch_price_candles(symbol, start="2024-01-01", end="2024-05-01")
     store_candles(db, symbol, result)
@@ -71,13 +71,25 @@ def get_all_symbols(db: Session = Depends(get_db)):
 # 🔹 Update
 @router.put("/candles/{candle_id}", response_model=PriceCandleOut, tags=["Candles"])
 def update_candle(candle_id: int, update: PriceCandleUpdate, db: Session = Depends(get_db)):
-    return crud.update_price_candle(db, candle_id, update)
+    updated = crud.update_price_candle(db, candle_id, update)
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Candle with ID {candle_id} not found")
+    return updated
 
+@router.patch("/candles/{candle_id}", response_model=PriceCandleOut, tags=["Candles"])
+def patch_candle(candle_id: int, update: PriceCandleUpdate, db:  Session = Depends(get_db)):
+    """
+    Partially update a price candle.
+    """
+    return crud.update_price_candle(db, candle_id, update)
 
 # 🔹 Delete
 @router.delete("/candles/{candle_id}", tags=["Candles"])
 def delete_candle(candle_id: int, db: Session = Depends(get_db)):
-    return crud.delete_price_candle(db, candle_id)
+    result = crud.delete_price_candle(db, candle_id)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
 
 
 # 🧪 Debug Only

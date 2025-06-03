@@ -1,12 +1,11 @@
 from app.db.crud.pricing import bulk_upsert_price_candles
 from sqlalchemy.orm import Session
 from datetime import datetime
+from app.ingestion.alpaca_client import PriceCandle, PriceFetchResult
 
-def store_candles(db, symbol: str, result):
-    """
-    Convert validated Alpaca price bars to DB-ready dicts
-    and bulk upsert to avoid duplicates.
-    """
+
+
+def store_candles(db, symbol: str, result: PriceFetchResult):
     candle_dicts = [
         {
             "symbol": symbol,
@@ -18,7 +17,7 @@ def store_candles(db, symbol: str, result):
             "volume": candle.v,
             "created_at": datetime.utcnow(),
         }
-        for candle in result.candles
+        for candle in result.candles  # ✅ note the use of .candles
     ]
 
     bulk_upsert_price_candles(db, candle_dicts)
