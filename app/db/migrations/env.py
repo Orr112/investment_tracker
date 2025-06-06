@@ -1,6 +1,7 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
+
 import os
 import sys
 import logging
@@ -12,6 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from app.db.database import Base
 from app.db.models import investment
 from app.db.models.pricing import PriceCandle
+from app.db.models import alerts
 
 
 # this is the Alembic Config object, which provides access to values within the .ini file
@@ -30,6 +32,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localho
 
 logging.getLogger(__name__).info("Using SQLAlchemy URL: %s", config.get_main_option("sqlalchemy.url"))
 
+print("Tables registered with metadata:", Base.metadata.tables.keys())
 
 
 def run_migrations_offline():

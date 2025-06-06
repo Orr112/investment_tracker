@@ -143,6 +143,28 @@ def test_get_all_symbols(client, db_session):
     assert response.status_code == 200
     assert set(response.json()) == {"AAPL", "MSFT"}
 
+# -------------------------------
+# 🔹 Test: Get Timestamps for symbol
+# -------------------------------
+
+def test_get_timestamps_for_symbol(client, db_session):
+    symbol = "TSLA"
+    timestamps = [datetime(2024, 1, 2), datetime(2024, 1, 3)]
+    for ts in timestamps:
+        candle = CandleModel(
+            symbol=symbol,
+            open=100.0, high=105.0, low=95.0, close=102.0, volume=1000000,
+            timestamp=ts
+        )
+        db_session.add(candle)
+    db_session.commit()
+
+    response = client.get(f"/api/v1/candles/timestamps/{symbol}")
+    assert response.status_code == 200
+    result = response.json()
+    assert result["symbol"] == symbol
+    assert len(result["timestamps"]) == 2
+
 
 
 # -------------------------------

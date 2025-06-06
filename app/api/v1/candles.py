@@ -67,6 +67,11 @@ def read_candle_by_id(candle_id: int, db: Session = Depends(get_db)):
 def get_all_symbols(db: Session = Depends(get_db)):
     return crud.get_all_symbols(db)
 
+@router.get("/candles/timestamps/{symbol}", tags=["Candles"])
+def get_candle_timestamp(symbol: str, db: Session = Depends(get_db)):
+    timestamps = crud.get_timestamps_for_symbol(db, symbol)
+    return {"symbol": symbol, "timestamps": timestamps}
+
 
 # 🔹 Update
 @router.put("/candles/{candle_id}", response_model=PriceCandleOut, tags=["Candles"])

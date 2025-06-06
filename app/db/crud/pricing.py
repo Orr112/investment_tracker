@@ -43,6 +43,12 @@ def get_price_candles(
 def get_all_symbols(db: Session) -> List[str]:
     return [row[0] for row in db.query(CandleModel.symbol).distinct().all()]
 
+def get_timestamps_for_symbol(db: Session, symbol: str) -> List[datetime]:
+    return [row[0] for row in db.query(CandleModel.timestamp)
+        .filter(CandleModel.symbol == symbol)
+        .order_by(CandleModel.timestamp)
+        .all()]
+
 
 # 🔹 UPDATE
 def update_price_candle(db: Session, candle_id: int, update_data: PriceCandleUpdate) -> Optional[CandleModel]:
