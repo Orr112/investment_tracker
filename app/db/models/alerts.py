@@ -23,4 +23,6 @@ class AlertThreshold(Base):
     direction =  Column(Enum(DirectionEnum), nullable=False)
     is_triggered= Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    phone_alert = Column(Boolean, default=False)
+    app_alert = Column(Boolean, default=False)
 

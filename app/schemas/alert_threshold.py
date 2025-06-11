@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
 from app.schemas.enums import DirectionEnum
@@ -9,6 +9,8 @@ class AlertThresholdBase(BaseModel):
     symbol: str
     threshold_price: float
     direction: DirectionEnum
+    phone_alert: Optional[bool] = False
+    app_alert: Optional[bool] = False
 
  # ✅ For creating new thresholds
 class AlertThresholdCreate(AlertThresholdBase):

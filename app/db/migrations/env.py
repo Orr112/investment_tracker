@@ -14,6 +14,7 @@ from app.db.database import Base
 from app.db.models import investment
 from app.db.models.pricing import PriceCandle
 from app.db.models import alerts
+from app.db.models.alerts import AlertThreshold
 
 
 # this is the Alembic Config object, which provides access to values within the .ini file
